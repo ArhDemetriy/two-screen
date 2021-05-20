@@ -1,4 +1,4 @@
-import React, { ReactPropTypes } from 'react';
+import React from 'react';
 function TextList() {
   return (
     <label className="TextList">
