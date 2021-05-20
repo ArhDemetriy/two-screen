@@ -4,12 +4,13 @@ import Scroll, { ScrollProps } from "./scroll/Scroll";
 
 export interface AppState extends ScrollProps{
   translate: number
+  isMoved: boolean
 }
 
 class App extends React.Component<{}, AppState> {
   constructor(props?: any) {
     super(props);
-    this.state = { translate: 0, page: 'first' };
+    this.state = { translate: 0, page: 'first' , isMoved: false};
   }
   componentDidMount() {
   }
@@ -18,33 +19,30 @@ class App extends React.Component<{}, AppState> {
   render() {
     return (
       <div className="App"
-        // onPointerLeave={this.endSwipe.bind(this)}
-        // onPointerCancel={this.endSwipe.bind(this)}
-        onPointerUp={this.endSwipe.bind(this)}
+        onPointerUp={this.endMove.bind(this)}
+        onPointerDown={this.startMove.bind(this)}
 
-        onPointerDown={this.startSwipe.bind(this)
-        }
+        onPointerMove={this.state.isMoved ? this.move.bind(this) : undefined}
       >
         <Scroll page={this.state.page} />
       </div>
     );
   }
   // values
-  protected startMove?: number | null
   // methods
-  protected startSwipe(ev: React.PointerEvent<HTMLDivElement>) {
-    this.startMove = ev.screenX
+  protected move(ev: React.PointerEvent<HTMLDivElement>) {
+    const MIN_MOVE = 1
+    if (ev.movementX > MIN_MOVE) {
+      this.setState({ page: 'first' })
+    } else if (ev.movementX < -MIN_MOVE) {
+      this.setState({ page: 'second' })
+    }
   }
-  protected endSwipe(ev: React.PointerEvent<HTMLDivElement>) {
-    if (!this.startMove && this.startMove !== 0) { return }
-    const move = ev.screenX - this.startMove
-    this.startMove = null
-
-    // console.log(move);
-    const newState: AppState = (Math.abs(move) > 10 && move > 0)
-      ? Object.assign<AppState, Partial<AppState>>(this.state, { page: 'first' })
-      : Object.assign<AppState, Partial<AppState>>(this.state, { page: 'second' })
-    this.setState(newState)
+  protected startMove(ev: React.PointerEvent<HTMLDivElement>) {
+    this.setState({ isMoved: true })
+  }
+  protected endMove(ev: React.PointerEvent<HTMLDivElement>) {
+    this.setState({ isMoved: false })
   }
 }
 
