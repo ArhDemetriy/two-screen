@@ -14,8 +14,10 @@ class Notepad extends React.Component<{}, { textList: { id: number, text: string
   render() {
     return (
       <div className="Notepad">
-        <Input pusher={this.pushText.bind(this) as Notepad['pushText']}/>
-        {this.state.textList.map(({ text, id }) => <span key={id}>{text}</span>)}
+        <Input pusher={this.pushText.bind(this) as Notepad['pushText']} />
+        <div className='Notepad__text_list'>
+          {this.state.textList.map(({ text, id }) => <span key={id}>{text}</span>)}
+        </div>
       </div>
     );
   }
