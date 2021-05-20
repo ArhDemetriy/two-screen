@@ -1,5 +1,5 @@
 {
-  "name": "react-app",
+  "name": "two-screen",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
@@ -47,10 +47,10 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ArhDemetriy/react-app.git"
+    "url": "git+https://github.com/ArhDemetriy/two-screen.git"
   },
   "bugs": {
-    "url": "https://github.com/ArhDemetriy/react-app/issues"
+    "url": "https://github.com/ArhDemetriy/two-screen/issues"
   },
-  "homepage": "https://github.com/ArhDemetriy/react-app#readme"
+  "homepage": "https://github.com/ArhDemetriy/two-screen#readme"
 }
