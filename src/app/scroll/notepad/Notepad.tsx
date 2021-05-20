@@ -1,4 +1,5 @@
 import React from 'react';
+import './Notepad.scss'
 import TextList from "./textList/TextList";
 import Input from "./input/Input";
 
