@@ -1,14 +1,21 @@
 .Notepad{
   padding-top: 1vh;
+  height: 100%;
   background-color: #003500;
   display: flex;
   flex-direction: column;
   gap: 3vh;
+  &__container_text_list{
+  overflow: hidden;
+  flex-grow: 1;
+  }
   &__text_list{
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1.5vh;
     user-select: none;
+
+    transform: translateY(calc(var(--verticalTranslate, 0) * 1px));
   }
 }

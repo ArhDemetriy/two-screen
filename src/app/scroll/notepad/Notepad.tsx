@@ -6,7 +6,7 @@ class Notepad extends React.Component<{}, { textList: { id: number, text: string
   constructor(props?: any) {
     super(props);
     const textList: Notepad['state']['textList'] = []
-    for (let i = 0; i < 20; i++) {
+    for (let i = 1; i < 10; i++) {
       textList.push({ id: Math.random(), text: `Сгенерированная строка ${i}` })
     }
     this.state = { textList };
@@ -15,10 +15,11 @@ class Notepad extends React.Component<{}, { textList: { id: number, text: string
     return (
       <div className="Notepad">
         <Input pusher={this.pushText.bind(this) as Notepad['pushText']} />
-        <div className='Notepad__text_list'>
-          {this.state.textList
-            .reverse()
-            .map(({ text, id }) => <span key={id}>{text}</span>)}
+        <div className = 'Notepad__container_text_list'>
+          <div className='Notepad__text_list'>
+            {this.state.textList
+              .map(({ text, id }) => <span key={id}>{text}</span>)}
+          </div>
         </div>
       </div>
     );

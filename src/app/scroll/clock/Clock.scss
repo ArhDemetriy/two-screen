@@ -6,4 +6,6 @@
   height: 100%;
   user-select: none;
   background: linear-gradient(to bottom, darkblue, black);
+
+  transform: translateY(calc(var(--verticalTranslate, 0) * 1px));
 }
