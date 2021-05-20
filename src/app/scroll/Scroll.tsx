@@ -1,4 +1,5 @@
 import React, { CSSProperties } from 'react';
+import './Scroll.scss'
 import Notepad from './notepad/Notepad';
 import Clock from './clock/Clock';
 
