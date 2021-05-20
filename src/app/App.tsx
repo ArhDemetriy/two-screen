@@ -3,18 +3,13 @@ import './App.scss';
 import Scroll, { ScrollProps } from "./scroll/Scroll";
 
 export interface AppState extends ScrollProps{
-  translate: number
   isMoved: boolean
 }
 
 class App extends React.Component<{}, AppState> {
   constructor(props?: any) {
     super(props);
-    this.state = { translate: 0, page: 'first' , isMoved: false};
-  }
-  componentDidMount() {
-  }
-  componentWillUnmount() {
+    this.state = { page: 'first' , isMoved: false};
   }
   render() {
     return (
