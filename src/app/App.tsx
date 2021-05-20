@@ -5,7 +5,7 @@ import Scroll from "./scroll/Scroll";
 function App() {
   return (
     <div className="App App__container">
-      <Scroll></Scroll>
+      <Scroll translate={10}/>
     </div>
   );
 }
