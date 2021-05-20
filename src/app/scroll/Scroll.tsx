@@ -3,23 +3,30 @@ import './Scroll.scss'
 import Notepad from './notepad/Notepad';
 import Clock from './clock/Clock';
 
-export interface ScrollProps {
-  // children?: any
-  translate: number
-}
+class Scroll extends React.Component<{}, { translate: number }> {
+  constructor(props?: any) {
+    super(props);
+    this.state = { translate: 0 };
+  }
+  componentDidMount() {
+  }
+  componentWillUnmount() {
+  }
+  render() {
+    return (
+      <div className="Scroll" style={{ '--translate': this.state.translate } as CSSProperties}>
+        <div className="Scroll__page">
+          <Notepad/>
+        </div>
+        <div className="Scroll__page">
+          <Clock/>
+        </div>
+      </div>
+    );
+  }
+  // values
+  // methods
 
-function Scroll() {
-  let translate = 0
-  return (
-    <div className="Scroll" style={{'--translate': translate} as CSSProperties}>
-      <div className="Scroll__page">
-        <Notepad></Notepad>
-      </div>
-      <div className="Scroll__page">
-        <Clock></Clock>
-      </div>
-    </div>
-  );
 }
 
 export default Scroll;
