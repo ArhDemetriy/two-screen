@@ -5,18 +5,20 @@ import Input from "./input/Input";
 class Notepad extends React.Component<{}, { textList: { id: number, text: string }[] }> {
   constructor(props?: any) {
     super(props);
-    this.state = { textList: [] };
-  }
-  componentDidMount() {
-  }
-  componentWillUnmount() {
+    const textList: Notepad['state']['textList'] = []
+    for (let i = 0; i < 20; i++) {
+      textList.push({ id: Math.random(), text: `Сгенерированная строка ${i}` })
+    }
+    this.state = { textList };
   }
   render() {
     return (
       <div className="Notepad">
         <Input pusher={this.pushText.bind(this) as Notepad['pushText']} />
         <div className='Notepad__text_list'>
-          {this.state.textList.map(({ text, id }) => <span key={id}>{text}</span>)}
+          {this.state.textList
+            .reverse()
+            .map(({ text, id }) => <span key={id}>{text}</span>)}
         </div>
       </div>
     );
