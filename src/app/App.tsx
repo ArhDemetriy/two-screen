@@ -31,7 +31,7 @@ class App extends React.Component<{}, AppState> {
   // values
   // methods
   protected move(ev: React.PointerEvent<HTMLDivElement>) {
-    const MIN_MOVE = 1
+    const MIN_MOVE = 10
     if (ev.movementX > MIN_MOVE) {
       this.setState({ page: 'first' })
     } else if (ev.movementX < -MIN_MOVE) {
