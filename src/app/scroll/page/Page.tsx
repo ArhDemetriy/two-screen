@@ -1,37 +1,38 @@
-import React from 'react';
-import './App.scss';
-import Scroll, { ScrollProps } from "./scroll/Scroll";
+import React, { CSSProperties } from 'react';
+import './Page.scss';
 
-export interface AppState extends ScrollProps{
+export interface PageProps {
+  children?: any
+}
+interface PageState {
+  children?: any
+  translate: number
   isMoved: boolean
 }
 
-class App extends React.Component<{}, AppState> {
-  constructor(props?: any) {
+class Page extends React.Component<PageProps, PageState> {
+  constructor(props: PageProps) {
     super(props);
-    this.state = { page: 'first' , isMoved: false};
+    this.state = { isMoved: false, translate: 0 };
   }
   render() {
     return (
-      <div className="App"
+      <div className="Page"
+        style={{ '--verticalTranslate': this.state.translate } as CSSProperties}
         onPointerUp={this.endMove.bind(this)}
         onPointerDown={this.startMove.bind(this)}
 
         onPointerMove={this.state.isMoved ? this.move.bind(this) : undefined}
       >
-        <Scroll page={this.state.page} />
+        {this.props.children}
       </div>
     );
   }
   // values
   // methods
   protected move(ev: React.PointerEvent<HTMLDivElement>) {
-    const MIN_MOVE = 10
-    if (ev.movementX > MIN_MOVE) {
-      this.setState({ page: 'first' })
-    } else if (ev.movementX < -MIN_MOVE) {
-      this.setState({ page: 'second' })
-    }
+    const translate = this.state.translate + ev.movementY
+    this.setState({ translate })
   }
   protected startMove(ev: React.PointerEvent<HTMLDivElement>) {
     this.setState({ isMoved: true })
@@ -42,4 +43,4 @@ class App extends React.Component<{}, AppState> {
 }
 
 
-export default App;
+export default Page;
