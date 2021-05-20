@@ -8,7 +8,8 @@ export interface ScrollProps {
   translate: number
 }
 
-function Scroll({ translate }: ScrollProps) {
+function Scroll() {
+  let translate = 0
   return (
     <div className="Scroll" style={{'--translate': translate} as CSSProperties}>
       <div className="Scroll__page">
