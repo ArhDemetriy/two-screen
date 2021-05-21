@@ -17,8 +17,8 @@ class App extends React.Component<{}, AppState> {
         onScroll={this.scroll.bind(this)}
         onPointerDown={this.pointerDown.bind(this)}
         onPointerUp={this.pointerUp.bind(this)}
-        onPointerCancel={this.pointerUp.bind(this)}
-        onPointerLeave={this.pointerUp.bind(this)}
+        // onPointerCancel={this.pointerUp.bind(this)}
+        // onPointerLeave={this.pointerUp.bind(this)}
       >
         <Scroll page={this.state.page} />
       </div>
@@ -31,13 +31,14 @@ class App extends React.Component<{}, AppState> {
 
   // methods
   private showScroll(el: EventTarget) {
+    console.clear()
     console.group(`scrolls:`, (el as any).className)
     // console.log(`scroll = ${(el as any).scroll}`);
     // console.log(`scrollBy = ${(el as any).scrollBy}`);
     console.log(`scrollHeight = ${(el as any).scrollHeight}`);
+    console.log(`scrollLeftMax = ${(el as any).scrollLeftMax}`);
     // console.log(`scrollIntoView = ${(ev[el] as any).scrollIntoView}`);
     console.log(`scrollLeft = ${(el as any).scrollLeft}`);
-    console.log(`scrollLeftMax = ${(el as any).scrollLeftMax}`);
     // console.log(`scrollTo = ${(el as any).scrollTo}`);
     console.log(`scrollTop = ${(el as any).scrollTop}`);
     console.log(`scrollTopMax = ${(el as any).scrollTopMax}`);
@@ -53,7 +54,6 @@ class App extends React.Component<{}, AppState> {
   protected pointerUp(ev: React.PointerEvent<HTMLDivElement>) {
     if (!this.pointerIsDown) { return }
     this.pointerIsDown = false
-    console.log('pointer UP');
   }
   private readonly scrollState = {
     direction: 0 as -1 | 0 | 1,
@@ -62,6 +62,8 @@ class App extends React.Component<{}, AppState> {
   private checkerScrolling?: NodeJS.Timeout
   private readonly TIMEOUT = 10
   protected scroll(ev: React.UIEvent<HTMLDivElement, UIEvent>) {
+    this.showScroll(ev.currentTarget)
+    // console.log(Object.assign({},ev))
     this.scrollState.lastPositions.shift()
     this.scrollState.lastPositions.push(ev.currentTarget.scrollLeft)
 
@@ -82,20 +84,28 @@ class App extends React.Component<{}, AppState> {
       return
     }
 
-    const p = lastPositions
-    if (p[0] < p[1] && p[1] < p[2]) {
+    let direction = 0
+    for (let i = 1; i < lastPositions.length; i++) {
+      const previousPosition = lastPositions[i-1];
+      const position = lastPositions[i];
+      if (previousPosition < position) {
+        direction++
+      } else if (previousPosition > position) {
+        direction--
+      }
+    }
+    if (direction>0) {
       this.scrollState.direction = 1
-    } else if (p[0] > p[1] && p[1] > p[2]) {
+    } else {
       this.scrollState.direction = -1
-    } else  {
-      this.scrollState.direction = 0
     }
 
     this.finishScrolling(el)
   }
 
   private finishScrolling(el: HTMLDivElement) {
-    const maxScroll = (el as any).scrollLeftMax
+    const maxScroll = (el as any).scrollLeftMax || 1000
+
     let scroll = 0
 
     if (1 == this.scrollState.direction) {
@@ -110,6 +120,7 @@ class App extends React.Component<{}, AppState> {
       }
     }
 
+    this.scrollState.lastPositions.fill(this.scrollState.lastPositions[this.scrollState.lastPositions.length - 1])
     el.scrollTo({ left: scroll })
   }
 }
