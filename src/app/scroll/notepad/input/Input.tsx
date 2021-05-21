@@ -11,6 +11,7 @@ function Input({ pusher }: InputProps) {
       if (textField && textField.value) {
         pusher(textField.value);
       }
+      textField.value = ''
     }}>
       <input className='Input__textField' type="text" name="textField" />
       <button type="submit">Добавить текст</button>
