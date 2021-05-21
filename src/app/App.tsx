@@ -17,17 +17,12 @@ class App extends React.Component<{}, AppState> {
         onScroll={this.scroll.bind(this)}
         onPointerDown={this.pointerDown.bind(this)}
         onPointerUp={this.pointerUp.bind(this)}
-        // onPointerCancel={this.pointerUp.bind(this)}
-        // onPointerLeave={this.pointerUp.bind(this)}
+        // onTouchEnd={this.pointerUp.bind(this)}
       >
         <Scroll page={this.state.page} />
       </div>
     );
   }
-  // values
-  private isScrolled = false
-
-
 
   // methods
   private showScroll(el: EventTarget) {
@@ -55,73 +50,114 @@ class App extends React.Component<{}, AppState> {
     if (!this.pointerIsDown) { return }
     this.pointerIsDown = false
   }
+
+  // scrolling
   private readonly scrollState = {
-    direction: 0 as -1 | 0 | 1,
-    lastPositions: [0, 0, 0] as [number, number, number],
+    direction: function () {
+      console.group('direction')
+      const start = this.lastPositions[0]
+      if (!isFinite(start)) { return 0 }
+
+      const criticalPoints = this.lastPositions
+        .reduce((direction, position) => {
+          if (direction.min > position) {
+            direction.min = position
+          } else if (direction.max < position) {
+            direction.max = position
+          }
+          return direction
+        }, { min: start, max: start })
+      const result = criticalPoints.min + criticalPoints.max - 2 * start
+      console.log({
+        result,
+        criticalPoints,
+        positions: this.lastPositions,
+      });
+      console.groupEnd()
+      return result
+    },
+    lastPositions: [] as number[]
   }
   private checkerScrolling?: NodeJS.Timeout
-  private readonly TIMEOUT = 10
+  private finisherScrolling?: NodeJS.Timeout
+  private readonly CHECK_INTERVAL = 500
+  private readonly ANIMATION_INTERVAL = 50
   protected scroll(ev: React.UIEvent<HTMLDivElement, UIEvent>) {
-    this.showScroll(ev.currentTarget)
-    // console.log(Object.assign({},ev))
-    this.scrollState.lastPositions.shift()
-    this.scrollState.lastPositions.push(ev.currentTarget.scrollLeft)
-
-    if (this.checkerScrolling) {
-      clearTimeout(this.checkerScrolling)
+    const newPosition = ev.currentTarget.scrollLeft
+    if (newPosition == this.lastAnimationPosition) { return }
+    if (this.finisherScrolling) {
+      clearInterval(this.finisherScrolling)
+      this.finisherScrolling = undefined
     }
-    this.checkerScrolling = setTimeout(this.checkScrolling
-      .bind(this, ev.currentTarget, this.scrollState.lastPositions), this.TIMEOUT);
+
+    const lastDetectPosition = this.scrollState.lastPositions[this.scrollState.lastPositions.length - 1]
+    if (newPosition != lastDetectPosition) {
+      this.scrollState.lastPositions.push(ev.currentTarget.scrollLeft)
+    }
+
+    clearInterval(this.checkerScrolling as any)
+    this.checkerScrolling = setInterval(this.checkScrolling
+      .bind(this, ev.currentTarget), this.CHECK_INTERVAL);
   }
-  private checkScrolling(el: HTMLDivElement, lastPositions: App['scrollState']['lastPositions']) {
-    if (el.scrollLeft != lastPositions[2]) { return }
-    if (this.pointerIsDown) {
-      const temp = this.checkerScrolling
-      this.checkerScrolling = setTimeout(this.checkScrolling
-        .bind(this, el, this.scrollState.lastPositions), this.TIMEOUT);
-      // поломано вычисление типа. то number, то NodeJS.Timeout
-      clearTimeout(temp as any)
+
+  // detect stay scrolling
+  private lastCheckedPosition = -1
+  private checkScrolling(el: HTMLDivElement) {
+    console.group('checkScrolling')
+
+    const lastPosition = this.scrollState.lastPositions[this.scrollState.lastPositions.length - 1]
+
+    console.log({
+      name: 'checkScrolling',
+      direction: this.scrollState.direction(),
+      lastPosition,
+    });
+
+    if (this.lastCheckedPosition != lastPosition) {
+      this.lastCheckedPosition = lastPosition
+      console.groupEnd()
       return
     }
 
-    let direction = 0
-    for (let i = 1; i < lastPositions.length; i++) {
-      const previousPosition = lastPositions[i-1];
-      const position = lastPositions[i];
-      if (previousPosition < position) {
-        direction++
-      } else if (previousPosition > position) {
-        direction--
-      }
-    }
-    if (direction>0) {
-      this.scrollState.direction = 1
-    } else {
-      this.scrollState.direction = -1
-    }
+    // поломано вычисление типов
+    clearInterval(this.checkerScrolling as any)
+    this.checkerScrolling = undefined
+    this.lastCheckedPosition = -1
+    clearInterval(this.finisherScrolling as any)
+    this.lastAnimationPosition = -1
+    // this.finisherScrolling не сбрасывается для блокировки
 
-    this.finishScrolling(el)
+    const direction = this.scrollState.direction() >= 0 ? 1 : -1
+    this.scrollState.lastPositions = []
+    this.finisherScrolling = setInterval(this.finishScrolling
+      .bind(this, el, direction), this.ANIMATION_INTERVAL)
+    console.groupEnd()
   }
 
-  private finishScrolling(el: HTMLDivElement) {
-    const maxScroll = (el as any).scrollLeftMax || 1000
+  // finalization scrolling
+  private readonly STEP = 10
+  private lastAnimationPosition = -1
+  private finishScrolling(el: HTMLDivElement, direction: -1 | 1) {
+    // console.group('finishScrolling')
+    el.scrollLeft += this.STEP * direction
+    const position = el.scrollLeft
+    // console.log({
+    //   position,
+    //   lastAnim: this.lastAnimationPosition,
+    // });
 
-    let scroll = 0
-
-    if (1 == this.scrollState.direction) {
-      scroll = maxScroll
-    } else if (-1 == this.scrollState.direction) {
-      scroll = 0
-    } else {
-      if (el.scrollLeft <= maxScroll / 2) {
-        scroll = 0
-      } else {
-        scroll = maxScroll
-      }
+    if (position == this.lastAnimationPosition) {
+      clearInterval(this.finisherScrolling as any)
+      this.finisherScrolling = undefined
+      this.lastAnimationPosition = -1
+      console.log('move finished to: ', position);
+      // console.groupEnd()
+      return
     }
-
-    this.scrollState.lastPositions.fill(this.scrollState.lastPositions[this.scrollState.lastPositions.length - 1])
-    el.scrollTo({ left: scroll })
+    // важно. т.к. их равенство маркер отсутсвия сторонних движений
+    // используется в эвенте скролла
+    this.lastAnimationPosition = position
+    // console.groupEnd()
   }
 }
 
