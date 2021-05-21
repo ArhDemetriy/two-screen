@@ -55,12 +55,12 @@ class App extends React.Component<{}, AppState> {
     this.pointerIsDown = false
     console.log('pointer UP');
   }
-
   private readonly scrollState = {
     direction: 0 as -1 | 0 | 1,
     lastPositions: [0, 0, 0] as [number, number, number],
   }
   private checkerScrolling?: NodeJS.Timeout
+  private readonly TIMEOUT = 10
   protected scroll(ev: React.UIEvent<HTMLDivElement, UIEvent>) {
     this.scrollState.lastPositions.shift()
     this.scrollState.lastPositions.push(ev.currentTarget.scrollLeft)
@@ -68,15 +68,50 @@ class App extends React.Component<{}, AppState> {
     if (this.checkerScrolling) {
       clearTimeout(this.checkerScrolling)
     }
-    setTimeout(this.checkScrolling
-      .bind(this, ev.currentTarget, this.scrollState.lastPositions), 0);
+    this.checkerScrolling = setTimeout(this.checkScrolling
+      .bind(this, ev.currentTarget, this.scrollState.lastPositions), this.TIMEOUT);
   }
   private checkScrolling(el: HTMLDivElement, lastPositions: App['scrollState']['lastPositions']) {
     if (el.scrollLeft != lastPositions[2]) { return }
+    if (this.pointerIsDown) {
+      const temp = this.checkerScrolling
+      this.checkerScrolling = setTimeout(this.checkScrolling
+        .bind(this, el, this.scrollState.lastPositions), this.TIMEOUT);
+      // поломано вычисление типа. то number, то NodeJS.Timeout
+      clearTimeout(temp as any)
+      return
+    }
 
+    const p = lastPositions
+    if (p[0] < p[1] && p[1] < p[2]) {
+      this.scrollState.direction = 1
+    } else if (p[0] > p[1] && p[1] > p[2]) {
+      this.scrollState.direction = -1
+    } else  {
+      this.scrollState.direction = 0
+    }
 
+    this.finishScrolling(el)
   }
 
+  private finishScrolling(el: HTMLDivElement) {
+    const maxScroll = (el as any).scrollLeftMax
+    let scroll = 0
+
+    if (1 == this.scrollState.direction) {
+      scroll = maxScroll
+    } else if (-1 == this.scrollState.direction) {
+      scroll = 0
+    } else {
+      if (el.scrollLeft <= maxScroll / 2) {
+        scroll = 0
+      } else {
+        scroll = maxScroll
+      }
+    }
+
+    el.scrollTo({ left: scroll })
+  }
 }
 
 
