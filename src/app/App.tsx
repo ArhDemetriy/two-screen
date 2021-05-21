@@ -14,31 +14,69 @@ class App extends React.Component<{}, AppState> {
   render() {
     return (
       <div className="App"
-        onPointerUp={this.endMove.bind(this)}
-        onPointerDown={this.startMove.bind(this)}
-
-        onPointerMove={this.state.isMoved ? this.move.bind(this) : undefined}
+        onScroll={this.scroll.bind(this)}
+        onPointerDown={this.pointerDown.bind(this)}
+        onPointerUp={this.pointerUp.bind(this)}
+        onPointerCancel={this.pointerUp.bind(this)}
+        onPointerLeave={this.pointerUp.bind(this)}
       >
         <Scroll page={this.state.page} />
       </div>
     );
   }
   // values
+  private isScrolled = false
+
+
+
   // methods
-  protected move(ev: React.PointerEvent<HTMLDivElement>) {
-    const MIN_MOVE = 10
-    if (ev.movementX > MIN_MOVE) {
-      this.setState({ page: 'first' })
-    } else if (ev.movementX < -MIN_MOVE) {
-      this.setState({ page: 'second' })
+  private showScroll(el: EventTarget) {
+    console.group(`scrolls:`, (el as any).className)
+    // console.log(`scroll = ${(el as any).scroll}`);
+    // console.log(`scrollBy = ${(el as any).scrollBy}`);
+    console.log(`scrollHeight = ${(el as any).scrollHeight}`);
+    // console.log(`scrollIntoView = ${(ev[el] as any).scrollIntoView}`);
+    console.log(`scrollLeft = ${(el as any).scrollLeft}`);
+    console.log(`scrollLeftMax = ${(el as any).scrollLeftMax}`);
+    // console.log(`scrollTo = ${(el as any).scrollTo}`);
+    console.log(`scrollTop = ${(el as any).scrollTop}`);
+    console.log(`scrollTopMax = ${(el as any).scrollTopMax}`);
+    console.log(`scrollWidth = ${(el as any).scrollWidth}`);
+    console.groupEnd()
+  }
+
+  private pointerIsDown = false
+  protected pointerDown(ev: React.PointerEvent<HTMLDivElement>) {
+    if (!ev.isPrimary || this.pointerIsDown) { return }
+    this.pointerIsDown = true
+  }
+  protected pointerUp(ev: React.PointerEvent<HTMLDivElement>) {
+    if (!this.pointerIsDown) { return }
+    this.pointerIsDown = false
+    console.log('pointer UP');
+  }
+
+  private readonly scrollState = {
+    direction: 0 as -1 | 0 | 1,
+    lastPositions: [0, 0, 0] as [number, number, number],
+  }
+  private checkerScrolling?: NodeJS.Timeout
+  protected scroll(ev: React.UIEvent<HTMLDivElement, UIEvent>) {
+    this.scrollState.lastPositions.shift()
+    this.scrollState.lastPositions.push(ev.currentTarget.scrollLeft)
+
+    if (this.checkerScrolling) {
+      clearTimeout(this.checkerScrolling)
     }
+    setTimeout(this.checkScrolling
+      .bind(this, ev.currentTarget, this.scrollState.lastPositions), 0);
   }
-  protected startMove(ev: React.PointerEvent<HTMLDivElement>) {
-    this.setState({ isMoved: true })
+  private checkScrolling(el: HTMLDivElement, lastPositions: App['scrollState']['lastPositions']) {
+    if (el.scrollLeft != lastPositions[2]) { return }
+
+
   }
-  protected endMove(ev: React.PointerEvent<HTMLDivElement>) {
-    this.setState({ isMoved: false })
-  }
+
 }
 
 
