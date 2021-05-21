@@ -15,9 +15,8 @@ class App extends React.Component<{}, AppState> {
     return (
       <div className="App"
         onScroll={this.scroll.bind(this)}
-        onPointerDown={this.pointerDown.bind(this)}
-        onPointerUp={this.pointerUp.bind(this)}
-        // onTouchEnd={this.pointerUp.bind(this)}
+        // onPointerDown={this.pointerDown.bind(this)}
+        // onPointerUp={this.pointerUp.bind(this)}
       >
         <Scroll page={this.state.page} />
       </div>
@@ -25,58 +24,33 @@ class App extends React.Component<{}, AppState> {
   }
 
   // methods
-  private showScroll(el: EventTarget) {
-    console.clear()
-    console.group(`scrolls:`, (el as any).className)
-    // console.log(`scroll = ${(el as any).scroll}`);
-    // console.log(`scrollBy = ${(el as any).scrollBy}`);
-    console.log(`scrollHeight = ${(el as any).scrollHeight}`);
-    console.log(`scrollLeftMax = ${(el as any).scrollLeftMax}`);
-    // console.log(`scrollIntoView = ${(ev[el] as any).scrollIntoView}`);
-    console.log(`scrollLeft = ${(el as any).scrollLeft}`);
-    // console.log(`scrollTo = ${(el as any).scrollTo}`);
-    console.log(`scrollTop = ${(el as any).scrollTop}`);
-    console.log(`scrollTopMax = ${(el as any).scrollTopMax}`);
-    console.log(`scrollWidth = ${(el as any).scrollWidth}`);
-    console.groupEnd()
-  }
-
-  private pointerIsDown = false
-  protected pointerDown(ev: React.PointerEvent<HTMLDivElement>) {
-    if (!ev.isPrimary || this.pointerIsDown) { return }
-    this.pointerIsDown = true
-  }
-  protected pointerUp(ev: React.PointerEvent<HTMLDivElement>) {
-    if (!this.pointerIsDown) { return }
-    this.pointerIsDown = false
-  }
+  // private pointerIsDown = false
+  // protected pointerDown(ev: React.PointerEvent<HTMLDivElement>) {
+  //   if (!ev.isPrimary || this.pointerIsDown) { return }
+  //   this.pointerIsDown = true
+  // }
+  // protected pointerUp(ev: React.PointerEvent<HTMLDivElement>) {
+  //   if (!this.pointerIsDown) { return }
+  //   this.pointerIsDown = false
+  // }
 
   // scrolling
   private readonly scrollState = {
-    direction: function () {
-      console.group('direction')
-      const start = this.lastPositions[0]
-      if (!isFinite(start)) { return 0 }
-
-      const criticalPoints = this.lastPositions
-        .reduce((direction, position) => {
-          if (direction.min > position) {
-            direction.min = position
-          } else if (direction.max < position) {
-            direction.max = position
-          }
-          return direction
-        }, { min: start, max: start })
-      const result = criticalPoints.min + criticalPoints.max - 2 * start
-      console.log({
-        result,
-        criticalPoints,
-        positions: this.lastPositions,
-      });
-      console.groupEnd()
-      return result
+    isReseated: true,
+    lastPosition: 0,
+    direction: 0,
+    reset: function () {
+      this.isReseated = true
+      this.direction = 0
     },
-    lastPositions: [] as number[]
+    push: function (newPosition: number) {
+      if (this.isReseated) {
+        this.isReseated = false
+      } else {
+        this.direction += newPosition - this.lastPosition
+      }
+      this.lastPosition = newPosition
+    },
   }
   private checkerScrolling?: NodeJS.Timeout
   private finisherScrolling?: NodeJS.Timeout
@@ -90,9 +64,8 @@ class App extends React.Component<{}, AppState> {
       this.finisherScrolling = undefined
     }
 
-    const lastDetectPosition = this.scrollState.lastPositions[this.scrollState.lastPositions.length - 1]
-    if (newPosition != lastDetectPosition) {
-      this.scrollState.lastPositions.push(ev.currentTarget.scrollLeft)
+    if (newPosition != this.scrollState.lastPosition) {
+      this.scrollState.push(ev.currentTarget.scrollLeft)
     }
 
     clearInterval(this.checkerScrolling as any)
@@ -103,19 +76,11 @@ class App extends React.Component<{}, AppState> {
   // detect stay scrolling
   private lastCheckedPosition = -1
   private checkScrolling(el: HTMLDivElement) {
-    console.group('checkScrolling')
+    if (this.scrollState.isReseated) { return }
 
-    const lastPosition = this.scrollState.lastPositions[this.scrollState.lastPositions.length - 1]
-
-    console.log({
-      name: 'checkScrolling',
-      direction: this.scrollState.direction(),
-      lastPosition,
-    });
-
+    const lastPosition = this.scrollState.lastPosition
     if (this.lastCheckedPosition != lastPosition) {
-      this.lastCheckedPosition = lastPosition
-      console.groupEnd()
+      this.lastCheckedPosition = lastPosition!
       return
     }
 
@@ -127,37 +92,28 @@ class App extends React.Component<{}, AppState> {
     this.lastAnimationPosition = -1
     // this.finisherScrolling не сбрасывается для блокировки
 
-    const direction = this.scrollState.direction() >= 0 ? 1 : -1
-    this.scrollState.lastPositions = []
+    const direction = this.scrollState.direction >= 0 ? 1 : -1
+    this.scrollState.reset()
     this.finisherScrolling = setInterval(this.finishScrolling
       .bind(this, el, direction), this.ANIMATION_INTERVAL)
-    console.groupEnd()
   }
 
   // finalization scrolling
   private readonly STEP = 10
   private lastAnimationPosition = -1
   private finishScrolling(el: HTMLDivElement, direction: -1 | 1) {
-    // console.group('finishScrolling')
     el.scrollLeft += this.STEP * direction
     const position = el.scrollLeft
-    // console.log({
-    //   position,
-    //   lastAnim: this.lastAnimationPosition,
-    // });
 
     if (position == this.lastAnimationPosition) {
       clearInterval(this.finisherScrolling as any)
       this.finisherScrolling = undefined
       this.lastAnimationPosition = -1
-      console.log('move finished to: ', position);
-      // console.groupEnd()
       return
     }
     // важно. т.к. их равенство маркер отсутсвия сторонних движений
     // используется в эвенте скролла
     this.lastAnimationPosition = position
-    // console.groupEnd()
   }
 }
 
