@@ -14,30 +14,106 @@ class App extends React.Component<{}, AppState> {
   render() {
     return (
       <div className="App"
-        onPointerUp={this.endMove.bind(this)}
-        onPointerDown={this.startMove.bind(this)}
-
-        onPointerMove={this.state.isMoved ? this.move.bind(this) : undefined}
+        onScroll={this.scroll.bind(this)}
+        // onPointerDown={this.pointerDown.bind(this)}
+        // onPointerUp={this.pointerUp.bind(this)}
       >
         <Scroll page={this.state.page} />
       </div>
     );
   }
-  // values
+
   // methods
-  protected move(ev: React.PointerEvent<HTMLDivElement>) {
-    const MIN_MOVE = 10
-    if (ev.movementX > MIN_MOVE) {
-      this.setState({ page: 'first' })
-    } else if (ev.movementX < -MIN_MOVE) {
-      this.setState({ page: 'second' })
+  // private pointerIsDown = false
+  // protected pointerDown(ev: React.PointerEvent<HTMLDivElement>) {
+  //   if (!ev.isPrimary || this.pointerIsDown) { return }
+  //   this.pointerIsDown = true
+  // }
+  // protected pointerUp(ev: React.PointerEvent<HTMLDivElement>) {
+  //   if (!this.pointerIsDown) { return }
+  //   this.pointerIsDown = false
+  // }
+
+  // scrolling
+  private readonly scrollState = {
+    isReseated: true,
+    lastPosition: 0,
+    direction: 0,
+    reset: function () {
+      this.isReseated = true
+      this.direction = 0
+    },
+    push: function (newPosition: number) {
+      if (this.isReseated) {
+        this.isReseated = false
+      } else {
+        this.direction += newPosition - this.lastPosition
+      }
+      this.lastPosition = newPosition
+    },
+  }
+  private checkerScrolling?: NodeJS.Timeout
+  private finisherScrolling?: NodeJS.Timeout
+  private readonly CHECK_INTERVAL = 500
+  private readonly ANIMATION_INTERVAL = 50
+  protected scroll(ev: React.UIEvent<HTMLDivElement, UIEvent>) {
+    const newPosition = ev.currentTarget.scrollLeft
+    if (newPosition == this.lastAnimationPosition) { return }
+    if (this.finisherScrolling) {
+      clearInterval(this.finisherScrolling)
+      this.finisherScrolling = undefined
     }
+
+    if (newPosition != this.scrollState.lastPosition) {
+      this.scrollState.push(ev.currentTarget.scrollLeft)
+    }
+
+    clearInterval(this.checkerScrolling as any)
+    this.checkerScrolling = setInterval(this.checkScrolling
+      .bind(this, ev.currentTarget), this.CHECK_INTERVAL);
   }
-  protected startMove(ev: React.PointerEvent<HTMLDivElement>) {
-    this.setState({ isMoved: true })
+
+  // detect stay scrolling
+  private lastCheckedPosition = -1
+  private checkScrolling(el: HTMLDivElement) {
+    if (this.scrollState.isReseated) { return }
+
+    const lastPosition = this.scrollState.lastPosition
+    if (this.lastCheckedPosition != lastPosition) {
+      this.lastCheckedPosition = lastPosition!
+      return
+    }
+
+    // поломано вычисление типов
+    clearInterval(this.checkerScrolling as any)
+    this.checkerScrolling = undefined
+    this.lastCheckedPosition = -1
+    clearInterval(this.finisherScrolling as any)
+    this.lastAnimationPosition = -1
+    // this.finisherScrolling не сбрасывается для блокировки
+
+    const direction = this.scrollState.direction >= 0 ? 1 : -1
+    this.scrollState.reset()
+    this.finisherScrolling = setInterval(this.finishScrolling
+      .bind(this, el, direction), this.ANIMATION_INTERVAL)
   }
-  protected endMove(ev: React.PointerEvent<HTMLDivElement>) {
-    this.setState({ isMoved: false })
+
+  // finalization scrolling
+  private readonly STEP = 10
+  private lastAnimationPosition = -1
+  private finishScrolling(el: HTMLDivElement, direction: -1 | 1) {
+    el.scrollLeft += this.STEP * direction
+    const position = el.scrollLeft
+
+    if (position == this.lastAnimationPosition) {
+      clearInterval(this.finisherScrolling as any)
+      this.finisherScrolling = undefined
+      this.lastAnimationPosition = -1
+      return
+    }
+    // важно. т.к. их равенство маркер отсутсвия сторонних движений
+    // используется в эвенте скролла
+    this.lastAnimationPosition = position
   }
 }
 

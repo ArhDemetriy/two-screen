@@ -11,7 +11,7 @@ export interface ScrollProps{
 function Scroll({ page }: ScrollProps) {
   return (
     <div className="Scroll"
-      style={{ '--translate': page === 'second' ? -100 : 0 } as CSSProperties}>
+      /* style={{ '--translate': page === 'second' ? -100 : 0 } as CSSProperties} */    >
       <Page><Notepad/></Page>
       <Page><Clock/></Page>
     </div>
