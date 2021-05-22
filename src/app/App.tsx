@@ -1,6 +1,7 @@
 import React from 'react';
 import './App.scss';
 import Scroll, { ScrollProps } from "./scroll/Scroll";
+import AnimationScrolling from "./animationScrolling/AnimationScrolling";
 
 export interface AppState extends ScrollProps{
   isMoved: boolean
@@ -15,24 +16,11 @@ class App extends React.Component<{}, AppState> {
     return (
       <div className="App"
         onScroll={this.scroll.bind(this)}
-        // onPointerDown={this.pointerDown.bind(this)}
-        // onPointerUp={this.pointerUp.bind(this)}
       >
         <Scroll page={this.state.page} />
       </div>
     );
   }
-
-  // methods
-  // private pointerIsDown = false
-  // protected pointerDown(ev: React.PointerEvent<HTMLDivElement>) {
-  //   if (!ev.isPrimary || this.pointerIsDown) { return }
-  //   this.pointerIsDown = true
-  // }
-  // protected pointerUp(ev: React.PointerEvent<HTMLDivElement>) {
-  //   if (!this.pointerIsDown) { return }
-  //   this.pointerIsDown = false
-  // }
 
   // scrolling
   private readonly scrollState = {
