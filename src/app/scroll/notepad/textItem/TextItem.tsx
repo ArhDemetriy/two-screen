@@ -1,10 +1,10 @@
 import React, { CSSProperties } from 'react';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import './TextItem.scss'
 interface TextItemState{
   charList: {
     id: number,
     char: string,
-    additionalClass: string,
   }[]
 }
 
@@ -13,48 +13,51 @@ export interface TextItemProps{
 }
 
 class TextItem extends React.Component<TextItemProps, TextItemState> {
+  private readonly STEP_DELAY = 100
   constructor(props: TextItemProps) {
     super(props);
     this.chars = Array.from(props.text)
-      .map(s => ({
-        id: Math.random(),
-        char: s,
-        additionalClass: this.INIT_CLASS
-      }))
+    .map(s => ({
+      id: Math.random(),
+      char: s,
+    }))
+    this.maxLengthAnimation = this.chars.length * this.STEP_DELAY * 1.5
 
     this.state = { charList: this.chars}
   }
   render() {
-    this.animator = setTimeout(this.animation.bind(this), 500) as any
+    let delay = 0
     return (
       <div className="TextItem">{
         this.state.charList.map(el => {
-          return <span
-            style = {{'--animationLength': Math.round(Math.random()*1000)/100 } as CSSProperties}
-            className={`TextItem__char ${el.additionalClass}`}
-            key={el.id}>
-            {el.char}
-          </span >
+          return (
+            <ReactCSSTransitionGroup
+              key={el.id}
+              transitionName="TextItem__char"
+              transitionAppear={true}
+              transitionAppearTimeout={delay += this.STEP_DELAY}
+              transitionEnter={false}
+              transitionLeave={false}
+            >
+              <span
+                style={{
+                  '--animationLength': Math.round(Math
+                    .random() * this.maxLengthAnimation)
+                } as CSSProperties}
+                className={'TextItem__char'}
+                >
+                {el.char}
+              </span >
+            </ReactCSSTransitionGroup>
+          )
         })
       }</div>
     );
   }
   // values
   private readonly chars: TextItemState['charList']
-  private readonly INIT_CLASS = 'TextItem__char-init'
+  private readonly maxLengthAnimation : number
 
-  protected animator?: number
-  protected indexAnimation = 0
-  protected animation() {
-    if (this.indexAnimation >= this.state.charList.length) {
-      clearInterval(this.animator)
-      this.animator = undefined
-      return
-    }
-    this.state.charList[this.indexAnimation].additionalClass = ''
-    this.setState({ charList: this.state.charList })
-    this.indexAnimation++
-  }
 }
 
 export default TextItem;

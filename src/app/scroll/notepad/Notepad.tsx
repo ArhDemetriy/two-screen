@@ -7,7 +7,7 @@ class Notepad extends React.Component<{}, { textList: { id: number, text: string
   constructor(props?: any) {
     super(props);
     const textList: Notepad['state']['textList'] = []
-    for (let i = 1; i <= 2; i++) {
+    for (let i = 1; i <= 10; i++) {
       textList.push({ id: Math.random(), text: `Сгенерированная строка ${i}` })
     }
     this.state = { textList };
