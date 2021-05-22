@@ -4,8 +4,23 @@
   align-items: center;
   width: 100%;
   height: 100%;
-  user-select: none;
-  background: linear-gradient(to bottom, darkblue, black);
 
-  transform: translateY(calc(var(--verticalTranslate, 0) * 1px));
+  overflow-y: scroll;
+  overflow-x: hidden;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  background: linear-gradient(to bottom, darkblue, black);
+  &__huge_container{
+    user-select: none;
+    min-height: 150vh;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  &__timer{
+  }
 }
