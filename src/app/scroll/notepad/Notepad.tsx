@@ -24,7 +24,6 @@ class Notepad extends React.Component<{}, { textList: { id: number, text: string
       </div>
     );
   }
-  // values
   // methods
   protected pushText(text: string) {
     const textListItem = {
