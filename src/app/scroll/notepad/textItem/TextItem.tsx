@@ -1,30 +1,59 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import './TextItem.scss'
+interface TextItemState{
+  charList: {
+    id: number,
+    char: string,
+    additionalClass: string,
+  }[]
+}
 
 export interface TextItemProps{
   text: string
 }
 
-class TextItem extends React.Component<TextItemProps, { charList: { id: number, char: JSX.Element }[] }> {
+class TextItem extends React.Component<TextItemProps, TextItemState> {
   constructor(props: TextItemProps) {
     super(props);
-    this.requiredChars = Array.from(props.text)
+    this.chars = Array.from(props.text)
+      .map(s => ({
+        id: Math.random(),
+        char: s,
+        additionalClass: this.INIT_CLASS
+      }))
+
+    this.state = { charList: this.chars}
   }
   render() {
+    this.animator = setTimeout(this.animation.bind(this), 500) as any
     return (
-      <div className="TextItem">{this.props.text}</div>
+      <div className="TextItem">{
+        this.state.charList.map(el => {
+          return <span
+            style = {{'--animationLength': Math.round(Math.random()*1000)/100 } as CSSProperties}
+            className={`TextItem__char ${el.additionalClass}`}
+            key={el.id}>
+            {el.char}
+          </span >
+        })
+      }</div>
     );
   }
   // values
-  private readonly requiredChars: string[]
+  private readonly chars: TextItemState['charList']
+  private readonly INIT_CLASS = 'TextItem__char-init'
 
-  // methods
-  protected pushText(text: string) {
-  }
-  protected animation(el: { id: number, text: any }) {
-    const requireText = Array.from(el.text)
-    console.log(requireText);
-    return el
+  protected animator?: number
+  protected indexAnimation = 0
+  protected animation() {
+    if (this.indexAnimation >= this.state.charList.length) {
+      clearInterval(this.animator)
+      this.animator = undefined
+      return
+    }
+    this.state.charList[this.indexAnimation].additionalClass = ''
+    this.setState({ charList: this.state.charList })
+    this.indexAnimation++
   }
 }
 
