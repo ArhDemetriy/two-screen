@@ -31,7 +31,6 @@ class Notepad extends React.Component<{}, { textList: { id: number, text: string
     this.state.textList.push(textListItem)
     this.setState(this.state)
   }
-
 }
 
 export default Notepad;
