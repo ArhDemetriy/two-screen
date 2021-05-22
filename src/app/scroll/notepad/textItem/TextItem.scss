@@ -1,0 +1,10 @@
+.TextItem{
+  --animationLength: 1000;
+  transition: opacity calc(var(--animationLength, 1000)*1ms);
+  &__char{
+    transition: opacity calc(var(--animationLength, 1000)*1ms);
+    &-appear{
+      opacity: 0;
+    }
+  }
+}
