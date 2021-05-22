@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100%;
+  height: 100vh;
 
   overflow-y: scroll;
   overflow-x: hidden;
@@ -17,10 +17,8 @@
   &__huge_container{
     user-select: none;
     min-height: 150vh;
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
     justify-content: center;
-  }
-  &__timer{
   }
 }
